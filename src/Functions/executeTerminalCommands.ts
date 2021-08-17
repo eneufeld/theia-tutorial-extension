@@ -8,13 +8,14 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR MIT
  ********************************************************************************/
-import {Console} from 'console';
-import * as vscode from 'vscode';
-import {TerminalCommands} from '../../schema/tutorial';
-import ReactPanel from '../ReactPanel';
-const exec = require('child_process').exec;
 
-export const executeTerminalCommands = async (commands: TerminalCommands, id: String) => {
+import * as vscode from 'vscode';
+import { TerminalCommands } from '../../schema/tutorial';
+import ReactPanel from '../ReactPanel';
+import * as cp from 'child_process';
+const exec = cp.exec;
+
+export const executeTerminalCommands = async (commands: TerminalCommands, id: string): Promise<void> => {
     const workspaceFolder: string = vscode.workspace.rootPath || '~';
 
     const outputChannel = vscode.window.createOutputChannel('Execute Commands');
@@ -28,22 +29,22 @@ export const executeTerminalCommands = async (commands: TerminalCommands, id: St
             const command = silently ? commands.terminalCommands[index].substring(9) : commands.terminalCommands[index];
             outputChannel.appendLine(command);
             index++;
-            if (silently){
+            if (silently) {
                 if (index == commands.terminalCommands.length) {
-                    ReactPanel.currentPanel?.sendToView({id: id, result: true});
+                    ReactPanel.currentPanel?.sendToView({ id: id, result: true });
                 }
                 exec(`cd ` + workspaceFolder + ` && ` + command);
                 setTimeout(() => next(), 1000);
             } else {
-                exec(`cd ` + workspaceFolder + ` && ` + command, (error: Error, stdout: string, stderr: string) => {
+                exec(`cd ` + workspaceFolder + ` && ` + command, (error, stdout) => {
                     if (error !== null) {
                         outputChannel.appendLine(error.message);
                         if (index == commands.terminalCommands.length) {
-                            ReactPanel.currentPanel?.sendToView({id: id, result: false});
+                            ReactPanel.currentPanel?.sendToView({ id: id, result: false });
                         }
                     } else {
                         if (index == commands.terminalCommands.length) {
-                            ReactPanel.currentPanel?.sendToView({id: id, result: true});
+                            ReactPanel.currentPanel?.sendToView({ id: id, result: true });
                         }
                     }
                     outputChannel.appendLine(stdout);
